@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ./output:/app/output
+      - ./db.sqlite:/app/db.sqlite
