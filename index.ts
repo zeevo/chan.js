@@ -73,10 +73,14 @@ const delay = (ms) => {
 
 const main = async () => {
   while (true) {
-    console.log("Starting sync cycle");
-    await syncCycle();
-    console.log("Sleeping 5 minutes...");
-    await delay(300000);
+    try {
+      console.log("Starting sync cycle");
+      await syncCycle();
+      console.log("Sleeping 5 minutes...");
+      await delay(300000);
+    } catch (e) {
+      console.log(e);
+    }
   }
 };
 
