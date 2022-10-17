@@ -1,13 +1,24 @@
-FROM node:16
+FROM node:lts-alpine
 
-COPY . .
+WORKDIR /app
 
-RUN apt update
+RUN apk update && apk add --no-cache nmap && \
+  echo @edge http://nl.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories && \
+  echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && \
+  apk update && \
+  apk add --no-cache \
+  chromium \
+  harfbuzz \
+  "freetype>2.8" \
+  ttf-freefont \
+  nss
 
-RUN apt install -y chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+COPY . /app
 
 RUN npm install
 
-RUN npm run prisma:migrate
+EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]
