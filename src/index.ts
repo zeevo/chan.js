@@ -28,6 +28,7 @@ const syncCycle = async () => {
       const threadId = threadUrl.split("/").at(-1);
       const threadHtml = await getUrl(threadUrl);
       const rawHtml = threadHtml.outerHTML;
+      console.log("Visiting", threadId);
       if (rawHtml.includes("bump limit reached")) {
         const images = threadHtml.querySelectorAll("a.fileThumb");
         const exists = await prisma.thread.findFirst({
