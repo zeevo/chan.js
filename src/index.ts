@@ -14,8 +14,6 @@ const syncCycle = async (catalogService) => {
   const catalogHTML = await catalogService.getCatalogHTML("g");
   const p = parse(catalogHTML);
 
-  console.log(catalogHTML);
-
   const selections = p.querySelectorAll("div.teaser");
 
   console.log("Found", selections.length, "threads");
