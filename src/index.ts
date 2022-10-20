@@ -1,18 +1,20 @@
 import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import { parse } from "node-html-parser";
-import { getCatalogHTML, getUrl } from "./catalog";
+import CatalogService from "./catalog";
 import { download } from "./utils";
 
 const prisma = new PrismaClient();
 
-const syncCycle = async () => {
+const syncCycle = async (catalogService) => {
   try {
     await fs.promises.mkdir("output");
   } catch (e) {}
 
-  const catalogHTML = await getCatalogHTML("g");
+  const catalogHTML = await catalogService.getCatalogHTML("g");
   const p = parse(catalogHTML);
+
+  console.log(catalogHTML);
 
   const selections = p.querySelectorAll("div.teaser");
 
@@ -26,7 +28,7 @@ const syncCycle = async () => {
       const href = thread.attrs.href;
       const threadUrl = `https:${href}`;
       const threadId = threadUrl.split("/").at(-1);
-      const threadHtml = await getUrl(threadUrl);
+      const threadHtml = await catalogService.getUrl(threadUrl);
       const rawHtml = threadHtml.outerHTML;
       console.log("Visiting", threadId);
       if (rawHtml.includes("bump limit reached")) {
@@ -35,7 +37,7 @@ const syncCycle = async () => {
           where: { threadId: threadId },
         });
         if (!exists) {
-          images.reduce(async (prev, img) => {
+          await images.reduce(async (prev, img) => {
             await prev;
             const imgUrl = `https:${img.attrs.href}`;
             const fileName = imgUrl.split("/").at(-1);
@@ -73,10 +75,12 @@ const delay = (ms) => {
 };
 
 const main = async () => {
+  const catalogService = new CatalogService();
+  await catalogService.initialize();
   while (true) {
     try {
       console.log("Starting sync cycle");
-      await syncCycle();
+      await syncCycle(catalogService);
       console.log("Sleeping 5 minutes...");
       await delay(300000);
     } catch (e) {
